@@ -13,15 +13,24 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipException;
 
+import javax.swing.JFrame;
+
 public class ModLoader {
 	public String cwd;
 	public String modsPath;
 	protected ModDictionary mods = new ModDictionary();
 	private ArrayList<URL> urls = new ArrayList<URL>(); // url list is common
-														// for all mods
+	// for all mods
+	private ArrayList<IModLoadListener> listeners = new ArrayList<IModLoadListener>();
+	private JFrame frame;
+	private boolean isManualStart = false;
 
 	public ModLoader() {
 
+	}
+
+	public void addListener(IModLoadListener listener) {
+		listeners.add(listener);
 	}
 
 	public boolean loadModClass(Class<?> modClass, String filename) throws java.lang.ClassNotFoundException {
@@ -34,6 +43,9 @@ public class ModLoader {
 			mods.add(info, mod);
 			System.out.println("ADDED Mod name: " + info.getName() + " " + info.getUID());
 			mods.register();
+			for (IModLoadListener listener : listeners) {
+				listener.onModLoad(info);
+			}
 			info.setLoaded(true);
 			return true;
 		} catch (SecurityException e) {
@@ -136,6 +148,13 @@ public class ModLoader {
 			} else {
 				for (File file : files) {
 					System.out.println(file.getName());
+					final ModInfo info = new ModInfo(mods);
+					info.setName(file.getName());
+					info.setFile(file);
+					info.setFilename(file.getAbsolutePath());
+					for (IModLoadListener listener : listeners) {
+						listener.onLibraryLoad(info);
+					}
 				}
 			}
 		} catch (ZipException e) {
@@ -156,10 +175,18 @@ public class ModLoader {
 											// dependencies
 			loadModsFromPath("coremods", true);
 			loadModsFromPath("mods", true);
+			if (!isManualStart) {
+				mods.start(frame);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
+	public void start() {
+		mods.start(frame);
+	}
+
 	/*
 	 * URLClassLoader child = new URLClassLoader (myJar.toURL(),
 	 * this.getClass().getClassLoader());
@@ -168,4 +195,16 @@ public class ModLoader {
 	 * Object instance = classToLoad.newInstance ();
 	 * Object result = method.invoke (instance);
 	 */
+
+	public void setFrame(JFrame preloader) {
+		frame = preloader;
+	}
+
+	public boolean isManualStart() {
+		return isManualStart;
+	}
+
+	public void setManualStart(boolean isManualStart) {
+		this.isManualStart = isManualStart;
+	}
 }

@@ -1,6 +1,10 @@
 package ru.olamedia.modloader;
 
+import java.io.File;
+import java.lang.reflect.Method;
+
 public class ModInfo {
+	private File file;
 	private String filename;
 	private String name;
 	private String uid;
@@ -17,6 +21,10 @@ public class ModInfo {
 			System.out.println("Depends on: " + modName);
 			throw new ModDependencyException("Mod " + modName + " was not loaded yet");
 		}
+	}
+
+	public void onStart(Object obj, Method method) {
+		this.mods.onStart(obj, method);
 	}
 
 	public String getName() {
@@ -49,5 +57,13 @@ public class ModInfo {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
 	}
 }
