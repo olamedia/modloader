@@ -78,6 +78,7 @@ public class Preloader extends JFrame implements IModLoadListener {
 		for (IDisposable disposable : disposables) {
 			disposable.dispose();
 		}
+		System.exit(0);
 	}
 
 	@Override
@@ -88,7 +89,7 @@ public class Preloader extends JFrame implements IModLoadListener {
 
 	@Override
 	public void onLibraryLoad(ModInfo info) {
-		label.setText("Loading " + info.getName() + "...");
+		label.setText("Loading library " + info.getName() + "...");
 		html.setText(html.getText() + "\r\n" + "Loading " + info.getName() + "...");
 	}
 
